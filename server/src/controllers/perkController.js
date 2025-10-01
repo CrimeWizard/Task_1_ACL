@@ -72,7 +72,7 @@ export async function createPerk(req, res, next) {
 export async function updatePerk(req, res, next) {
 
   try{
-      const updatedSchema = perkSchema.fork(Object.keys(perkSchema.describe().keys),
+    const updatedSchema = perkSchema.fork(Object.keys(perkSchema.describe().keys),
       (schema) => schema.optional());
 
 
@@ -82,8 +82,16 @@ export async function updatePerk(req, res, next) {
       return res.status(400).json({message: error.message});
     }
 
+    // Filter out fields that weren't provided in the request body
+    const updateFields = {};
+    Object.keys(req.body).forEach(key => {
+      if (value[key] !== undefined) {
+        updateFields[key] = value[key];
+      }
+    });
+
     const { id } = req.params;
-    const updatedData = await Perk.findByIdAndUpdate(id, value, {new : true});
+    const updatedData = await Perk.findByIdAndUpdate(id, updateFields, {new : true});
 
     if (!updatedData){
       return res.status(404).json({message: "Perk not found"});
